@@ -1,0 +1,111 @@
+.loopVertex, .regVertex {
+    -fx-text-fill: black;
+    /*
+    -fx-pref-height: 35px;
+    -fx-pref-width: 35px;
+    */
+    -fx-background-radius: 0;
+    -fx-border-color:black;
+    -fx-border-width: 1 1 1 1;
+    -fx-background-insets: 0 0 0 0, 0, 1, 2;
+}
+
+.sideBtn{
+    -fx-background-radius: 0;
+
+    -fx-border-width: 1 1 1 1;
+    -fx-background-insets: 0 0 0 0, 0, 1, 2;
+    -fx-background-color: rgba(0,0,0,0);
+}
+
+.subTitle{
+    -fx-text-alignment: center;
+    -fx-font-size: 15px ;
+    -fx-fill: white;
+}
+
+.matrixLabels{
+    /*-fx-pref-height: 35px;
+    -fx-pref-width: 35px;*/
+    -fx-background-radius: 0;
+    -fx-background-insets: 0 0 0 0, 0, 1, 2;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: rgba(0,0,0,0);
+    /*-fx-text-fill: #8d8d8e;*/
+}
+
+.matrixLabels:focused {
+    -fx-border-color: transparent, transparent;
+    -fx-border-width: 1, 1;
+    -fx-border-style: solid, segments(1, 2);
+    -fx-border-radius: 0, 0;
+    -fx-border-insets: 1 1 1 1, 0;
+}
+
+.assets{
+    -fx-text-fill: white;
+    -fx-font-size: 12px ;
+    -fx-fill: white;
+}
+
+.matrixLabels:pressed {
+    -fx-background-color: #1d2d47;
+    -fx-text-fill: white;
+}
+
+.root{
+    -fx-background-color: #252525;
+    -fx-background-image: url("../img/noise.png");
+    -fx-background-repeat: repeat;
+}
+
+#choiceBoxSize {
+/*
+-fx-padding: 15px;
+-fx-border-insets: 15px;
+-fx-background-insets: 15px;
+*/
+}
+
+#choiceBoxTitle{
+    -fx-font-size: 46px ;
+    -fx-fill: white;
+}
+
+.btn{
+    -fx-background-color: rgb(244, 81, 30);
+    -fx-pref-width:240px;
+    -fx-padding: 20 ;
+    -fx-text-fill: #fff;
+    -fx-font-size: 15px ;
+    /*-fx-cursor: hand;*/
+}
+
+.btn:hover{
+    -fx-background-color: rgb(244, 90, 41);
+}
+
+.loopVertex{
+    -fx-background-color: #9cb0ce;
+}
+
+.regVertex {
+    -fx-background-color: white;
+}
+/*.loopVertex:hover{
+    -fx-background-color: #f27d7d;
+}*/
+
+/*    -fx-background-image: url("background_image.jpg");
+    -fx-background-repeat: stretch;
+    -fx-background-size: 900 506;
+    -fx-background-position: center center;
+    -fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0); */
+
+/*
+.regVertex:hover{
+    -fx-background-color: #cff2c9;
+}
+*/

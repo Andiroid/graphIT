@@ -1,0 +1,214 @@
+import javafx.application.Application;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import lib.GT;
+import lib.Matrix;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+public class Main extends Application {
+
+    private Scene scene;
+    private final int DEFAULT_SIZE = 10;
+    private VBox vBoxLeft;
+
+    public void toggleBtn(String id){
+        String[] data = id.split("-");
+        int valA = Integer.parseInt(data[0]);
+        int valB = Integer.parseInt(data[1]);
+        Button toggleBtn = (Button) scene.lookup("#"+id);
+        int toggleBtnVal = Integer.parseInt(toggleBtn.getText());
+        toggleBtnVal ^= 1;
+        toggleBtn.setText(""+toggleBtnVal+"");
+        toggleBtn = (Button) scene.lookup("#"+valB+"-"+valA);
+        toggleBtn.setText(""+toggleBtnVal+"");
+        // TODO change value in Matrix
+    }
+
+    public void hoverBtn(String id, String color){
+        String[] data = id.split("-");
+        int valA = Integer.parseInt(data[0]);
+        int valB = Integer.parseInt(data[1]);
+        Button hoverBtnA = (Button) scene.lookup("#"+id);
+        Button hoverBtnB = (Button) scene.lookup("#"+valB+"-"+valA);
+        hoverBtnA.setStyle("-fx-background-color:"+color+";");
+        hoverBtnB.setStyle("-fx-background-color:"+color+";");
+    }
+
+
+
+    public void initMain(int size, Stage window){
+
+        Text topText = new Text("");
+        Text rightText = new Text("");
+        Text bottomText = new Text("");
+        Text leftText = new Text("test");
+        BorderPane.setAlignment(topText, Pos.TOP_CENTER);
+        BorderPane.setAlignment(bottomText,Pos.BOTTOM_CENTER);
+        BorderPane.setAlignment(leftText,Pos.CENTER_LEFT);
+        BorderPane.setAlignment(rightText,Pos.CENTER_RIGHT);
+
+        Matrix thisMatrix = new Matrix(size+2);
+        FlowPane matrixFrame = new FlowPane();
+        matrixFrame.setMaxHeight(thisMatrix.getMatrixLength());
+        matrixFrame.setMaxWidth(thisMatrix.getMatrixLength());
+        matrixFrame.setStyle("-fx-background-color:#232528;");
+        Button[][] buttons = new Button[size+2][size+2];
+
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons.length; j++) {
+                if((i == 0) || (j == 0) || (i == size+1) || (j == size+1)){
+                    String thisLabelChar = "";
+                    if(!((i == 0) && (j == 0)) && !((i == 0 ) && (j == size+1)) && !((i == size+1) && (j == 0)) && !((i == size+1 ) && (j == size+1))){
+                        int c = (i == 0) || (i == size + 1) ? 65+j-1 : 65+i-1;
+                        thisLabelChar += Character.toString ((char) c);
+                    }
+                    buttons[i][j] = new Button(thisLabelChar);
+                    matrixFrame.getChildren().add(buttons[i][j]);
+                    buttons[i][j].getStyleClass().add("matrixLabels");
+                } else {
+                    buttons[i][j] = new Button("0");
+                    if(i == j){
+                        buttons[i][j].getStyleClass().add("loopVertex");
+                    } else {
+                        buttons[i][j].getStyleClass().add("regVertex");
+                        buttons[i][j].setOnMouseClicked(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            // System.out.println(thisBtn.getId());
+                            toggleBtn(thisBtn.getId());
+                            //matrixFrame.getChildren().remove(scene.lookup(".loopVertex"));
+                        });
+                        buttons[i][j].setOnMouseEntered(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#cff2c9");
+                        });
+                        buttons[i][j].setOnMouseExited(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#fff");
+                        });
+                    }
+                    buttons[i][j].setId(i+"-"+j);
+                    thisMatrix.setMatrix(i,j,1);
+                    matrixFrame.getChildren().add(buttons[i][j]);
+                }
+            }
+        }
+
+        /*
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons.length; j++) {
+                buttons[i][j] = new Button("0");
+                if(i == j){
+                    buttons[i][j].getStyleClass().add("loopVertex");
+                } else {
+                    buttons[i][j].getStyleClass().add("regVertex");
+                    buttons[i][j].setOnMouseClicked(t -> {
+                        Button thisBtn = (Button) t.getSource();
+                        // System.out.println(thisBtn.getId());
+                        toggleBtn(thisBtn.getId());
+                        //matrixFrame.getChildren().remove(scene.lookup(".loopVertex"));
+                    });
+                    buttons[i][j].setOnMouseEntered(t -> {
+                        Button thisBtn = (Button) t.getSource();
+                        hoverBtn(thisBtn.getId(), "#cff2c9");
+                    });
+                    buttons[i][j].setOnMouseExited(t -> {
+                        Button thisBtn = (Button) t.getSource();
+                        hoverBtn(thisBtn.getId(), "#fff");
+                    });
+                }
+                buttons[i][j].setId(i+"-"+j);
+                thisMatrix.setMatrix(i,j,1);
+                matrixFrame.getChildren().add(buttons[i][j]);
+            }
+        }
+        */
+
+
+
+
+        //System.out.print(thisMatrix.getMatrix()[1][2]);
+
+
+        int testV = 3;
+        Matrix testM = new Matrix(testV);
+
+        for (int i = 0; i < testV; i++) {
+            for (int j = 0; j < testV; j++) {
+                testM.setMatrix(i,j,i+1);
+            }
+        }
+
+        //Matrix printTest = mTest.powMatrix(testM.getMatrix(), 5);
+        Matrix printTest = GT.powMatrix(testM, 3);
+
+        for (int i = 0; i < testV; i++) {
+            for (int j = 0; j < testV; j++) {
+                System.out.print(printTest.getMatrix()[i][j]);
+            }
+            System.out.print("\n");
+        }
+
+        VBox vBox = new VBox();
+        vBox.setSpacing(10);
+        ChoiceBox choiceBoxSize = new ChoiceBox();
+        Text choiceBoxSizeTitle = new Text("Graph IT");
+        try {
+            final Font f = Font.loadFont(new FileInputStream(new File("src/fonts/ag.ttf")), 12);
+            choiceBoxSizeTitle.setFont(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        choiceBoxSizeTitle.setId("choiceBoxTitle");
+        vBox.setMargin(choiceBoxSizeTitle, new Insets(15, 5, 10, 5));
+        vBox.setMargin(choiceBoxSize, new Insets(15, 5, 5, 5));
+        vBox.setAlignment(Pos.BASELINE_CENTER);
+        ObservableList list = vBox.getChildren();
+        list.addAll(choiceBoxSizeTitle, choiceBoxSize);
+        choiceBoxSize.setId("choiceBoxSize");
+        choiceBoxSize.getItems().addAll("3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+        choiceBoxSize.getSelectionModel().select(size-3);
+
+        choiceBoxSize.getSelectionModel().selectedIndexProperty().addListener((observableValue, number, number2) -> {
+            //System.out.println(choiceBoxSize.getItems().get((Integer) number2));
+            int choosenSize = (Integer) number2;
+            initMain(choosenSize+3,window);
+        });
+
+        BorderPane root = new BorderPane(matrixFrame, vBox, rightText, bottomText, vBoxLeft);
+        //root.setPrefSize(1280, 720);
+        //window.setMaximized(true);
+        root.setPrefSize(1280, 720);
+        //window.setFullScreen(true);
+        root.setStyle("-fx-background-color:#1d2d47;");
+        scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("css/generic.css").toExternalForm());
+        window.setScene(scene);
+    }
+
+    @Override
+    public void start(Stage window) throws Exception{
+        initMain(DEFAULT_SIZE,window);
+        window.setTitle("GraphIT");
+        window.show();
+        window.setMinWidth(window.getWidth());
+        window.setMinHeight(window.getHeight());
+    }
+
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

@@ -1,0 +1,220 @@
+    public void updateLeftGraphAssets(){
+        // Artikulationen
+        // einen Knoten rausnehmen, Komponenten zaehlen
+        // wenn 2 Komponenten mehr, Knoten war eine Artikulation
+        // rausnehmen heisst alle Kanten entfernen
+        // am besten mit backup Matrix arbeiten
+
+        // Bruecken
+        // Endknoten sind Knoten mit nur einer Kante
+        // Aller Artikulationen und Endknoten verbindungen
+
+        // for loop fuer jeden Knoten
+        // for loop fuer alle Kanten des Knoten
+        // wenn Kanten ueber eins, alle Kanten entfernen und Artikulation checken
+        // wenn eine Kante, = Endknoten
+        // wenn keine Kante, ueberspringen
+
+
+        //kopie der adj matrix machen -> backup matrix
+        //mit der originalen adj arbeiten
+        // wenn fertig, originale wieder mit backup herstellen
+
+
+
+
+        int componentCount = this.components.size();
+        System.out.println("c_start_"+componentCount);
+        int[][] thisAdjMatrix = adjMatrix.getMatrix();
+
+        int edgeCount = 0;
+
+        for (int i = 0; i < thisAdjMatrix.length; i++) {
+            for (int j = 0; j < thisAdjMatrix.length; j++) {
+                if(thisAdjMatrix[i][j] == 1){
+                    edgeCount++;
+                }
+            }
+            System.out.println("c_now_"+componentCount);
+            for (int q = 0; q < thisAdjMatrix.length; q++) {
+                thisAdjMatrix[i][q] = 0;
+            }
+            int test = getComponentCount(thisAdjMatrix); //must work with right matrix
+            System.out.println("c_after_"+test);
+            System.out.println(edgeCount);
+            thisAdjMatrix = adjMatrix.getMatrix();
+            edgeCount = 0;
+        }
+        //System.out.println(edgeCount);
+
+
+
+
+
+
+
+
+        //adjMatrix.setVal(0,1,1);
+        //printMatrix(adjMatrix);
+
+        /*
+            System.out.println(getComponentCount(adjMatrix));
+            printMatrix(adjMatrix);
+            adjMatrix.setVal(0,1,0);
+            //adjMatrix.setVal(1,0,0);
+            System.out.println(getComponentCount(adjMatrix));
+            printMatrix(adjMatrix);
+        */
+        /*
+        2
+        0 1 0
+        1 0 0
+        0 0 0
+        3
+        0 0 0
+        1 0 0
+        0 0 0
+        */
+
+
+
+
+/*
+
+        int componentCount = this.components.size();
+        System.out.println("c_start_"+componentCount);
+        //Matrix backUpM = adjMatrix;
+        int[][] backUpAdjMatrix = adjMatrix.getMatrix();
+
+        int edgeCount = 0;
+        //int edgeCount = 0;
+
+        for (int i = 0; i < adjMatrix.getMatrix().length; i++) {
+            //for (int j = i+1; j < adjMatrix.getMatrix().length; j++) {
+            for (int j = 0; j < adjMatrix.getMatrix().length; j++) {
+                //if(backUpAdjMatrix[i][j] == 1){
+                if(adjMatrix.getValue(i,j) == 1){
+                    edgeCount++;
+                    adjMatrix.setVal(i,j,0);
+                    //backUpAdjMatrix[i][j] = 0;
+                }
+            }
+            if(edgeCount == 1){
+                System.out.println("End: "+i);
+            } else if(edgeCount > 1){
+                System.out.println("c_now_"+componentCount);
+                //getComponents(); //must work with right matrix
+                System.out.println("c_after_"+this.components.size());
+                System.out.println(edgeCount);
+            }
+
+            adjMatrix.setFullMatrix(backUpAdjMatrix);
+            edgeCount = 0;
+            //System.out.println(edgeCount);
+            printMatrix(adjMatrix);
+        }
+
+*/
+
+/*
+
+        int componentCount = this.components.size();
+        System.out.println("c_start_"+componentCount);
+        int[][] thisAdjMatrix = adjMatrix.getMatrix();
+
+        int edgeCount = 0;
+
+        for (int i = 0; i < thisAdjMatrix.length; i++) {
+            //for (int j = i+1; j < thisAdjMatrix.length; j++) {
+            for (int j = 0; j < thisAdjMatrix.length; j++) {
+                if(thisAdjMatrix[i][j] == 1){
+                    edgeCount++;
+                    //thisAdjMatrix[i][j] = 0;
+                }
+            }
+            if(edgeCount == 1){
+                System.out.println("End: "+i);
+            } else if(edgeCount > 1){
+                System.out.println("c_now_"+componentCount);
+                //getComponents(); //must work with right matrix
+                System.out.println("c_after_"+this.components.size());
+                System.out.println(edgeCount);
+            }
+            thisAdjMatrix = adjMatrix.getMatrix();
+            edgeCount = 0;
+        }
+        //System.out.println(edgeCount);
+*/
+
+
+
+
+
+
+
+/*
+        int componentCount = this.components.size();
+
+        int[][] thisAdjMatrix = adjMatrix.getMatrix();
+
+        int edgeCount = 0;
+
+        for (int i = 0; i < thisAdjMatrix.length; i++) {
+            for (int j = 0; j < thisAdjMatrix.length; j++) {
+                // count edges
+                if(thisAdjMatrix[i][j] == 1){
+                    thisAdjMatrix[i][j] = 0;
+                    edgeCount++;
+                }
+            }
+            if(edgeCount == 1){
+                // endVertex
+                adjMatrix.setEndVertices(i);
+                System.out.println("End found");
+            } else if(edgeCount > 1){
+                // get component count and compare
+                getComponents();
+                if(componentCount-2 == this.components.size()){
+                    System.out.println("Artikulation found");
+                }
+            }
+            // reset count & matrix
+            thisAdjMatrix = adjMatrix.getMatrix();
+            edgeCount = 0;
+        }*/
+
+
+
+    }
+
+
+    public int getComponentCount(int[][] thisMatrix){
+
+        ArrayList componentsMirror = new ArrayList();
+        int[][] thisWorkingMatrix = thisMatrix;
+        boolean[] checked = new boolean[thisWorkingMatrix.length];
+        Queue<Integer> queue = new LinkedList<>();
+        for (int o = 0; o < checked.length; o++) {
+            if(!checked[o]){
+                queue.add(o);
+                ArrayList<Integer> thisMirrorComponent = new ArrayList<>();
+                thisMirrorComponent.add(o);
+                while (!queue.isEmpty()) {
+                    int current = queue.peek(); // get first element of queue
+                    queue.remove(current);
+                    checked[current] = true;
+                    // check matrix row given by current(popped from queue)
+                    for (int i = 0; i < thisWorkingMatrix.length; i++) {
+                        if((thisWorkingMatrix[current][i] == 1) && (!checked[i])){
+                            thisMirrorComponent.add(i);
+                            checked[i] = true;
+                            queue.add(i);
+
+                        }
+                    }
+                }
+                componentsMirror.add(thisMirrorComponent);
+            }
+        }
+        return componentsMirror.size();
+    }

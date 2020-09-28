@@ -1,65 +1,154 @@
 package lib;
 
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
 
-public class Matrix {
+public class Matrix implements Cloneable{
 
-	public Matrix() {
-			//HashMap matrix = new HashMap();
-			//String file = new File(".").getAbsolutePath();
-			//System.out.println(file);
-			try {
-				BufferedReader in = new BufferedReader(new FileReader("src/csv/Graph.CSV"));
+    private int vertices;
+    private int[][] matrix;
+    private int[] eccentricities;
+    private int radius;
+    private int diameter;
+    private String center = "";
+    private ArrayList endVertices;
+    private ArrayList endVerticesChar;
+    private ArrayList cutVertices;
+    private ArrayList cutVerticesChar;
+    private ArrayList bridges;
 
-				String str;
-				String[][] out = null;
-				String[] tempArray = null;
-				while ((str = in.readLine()) != null) {
-					//out += str+"\n";
-					tempArray = str.split(";");
-				}
-				System.out.println(Arrays.toString(tempArray));
+    public Matrix(int vertices){
+        this.vertices = vertices;
+        this.matrix = new int[vertices][vertices];
+        this.eccentricities = new int[vertices];
+        this.endVertices = new ArrayList();
+        this.endVerticesChar = new ArrayList();
+        this.cutVertices = new ArrayList();
+        this.cutVerticesChar = new ArrayList();
+        this.bridges = new ArrayList();
+    }
 
-				//String str;
-				//String out = "";
-				//while ((str = in.readLine()) != null) {
-				//	out += str+"\n";
-				//}
+    public Matrix (Matrix p) {
+        this.vertices = p.vertices;
+        this.matrix = new int[vertices][vertices];
+        this.matrix = p.matrix;
+        /* Matrix m = adjMatrix; Matrix mCopy = new Matrix(m);*/
+    }
 
+    public Object clone()throws CloneNotSupportedException{
+        return super.clone();
+    }
 
-				//String str;
-				//while ((str = in.readLine()) != null) {
-				//	System.out.println(str);
-				//}
+    public int getVertices(){
+        return this.vertices;
+    }
 
-				//System.out.println(out);
-				//String[][] deepArray = new String[][] {{"John", "Mary"}, {"Alice", "Bob"}};
-				//System.out.println(Arrays.toString(deepArray));
-				//System.out.println(Arrays.toString(out));
-				//System.out.println(out[0]);
+    public int getValue(int a, int b){
+        return this.matrix[a][b];
+    }
 
-				//String[] values = in.readLine().split(";");
-				//System.out.println(values);
+    public void setVal(int a, int b, int c){
+        this.matrix[a][b] = c;
+    }
 
-			} catch (IOException e) {
-				System.out.println("error");
-			}
-	}
-	public void readMatrixFile() {
-		//HashMap matrix = new HashMap();
+    public void setMirrorVal(int a, int b, int c){
+        this.matrix[b][a] = c;
+        this.matrix[a][b] = c;
+    }
 
-		
-		try {
-			BufferedReader in = new BufferedReader(new FileReader("file:///home/andiroid/Documents/Graph.CSV"));
-			String str;
+    public void setFullMatrix(int[][] matrix){
+        this.vertices = matrix.length;
+        this.matrix = matrix;
+    }
 
-			while ((str = in.readLine()) != null) {
-				System.out.println(str);
-			}
-			System.out.println(str);
-		} catch (IOException e) {
-		}
-	}
-	
+    public int[][] getMatrix(){
+        return this.matrix;
+    }
+
+    public void setEccentricities(int index, int val){
+            this.eccentricities[index] = val;
+    }
+
+    public void setBridges(String val){
+        this.bridges.add(val);
+    }
+
+    public ArrayList getBridges(){
+        return this.bridges;
+    }
+
+    public void clearBridges(){
+        this.bridges.clear();
+    }
+
+    public void setEndVertex(int val){
+        this.endVertices.add(val);
+        this.endVerticesChar.add(Character.toString ((char) (65+val)));
+    }
+
+    public void setCutVertex(int val){
+        this.cutVertices.add(val);
+        this.cutVerticesChar.add(Character.toString ((char) (65+val)));
+    }
+
+    public void setRadius(int radius){
+        this.radius = radius;
+    }
+
+    public void setDiameter(int diameter){
+        this.diameter = diameter;
+    }
+
+    public void setCenter(String center){
+        this.center = center;
+    }
+
+    public int[] getEccentricities(){
+        return this.eccentricities;
+    }
+
+    public ArrayList getEndVertices(){
+        return this.endVertices;
+    }
+
+    public ArrayList getEndVerticesChar(){
+        return this.endVerticesChar;
+    }
+
+    public ArrayList getCutVertices(){
+        return this.cutVertices;
+    }
+
+    public String getCutVerticesChar(){
+        String out = this.cutVerticesChar.toString();
+
+        return "{"+out.substring(1, out.length() - 1)+"}";
+    }
+
+    public void clearCutVertices(){
+        this.cutVertices.clear();
+    }
+
+    public void clearCutVerticesChar(){
+        this.cutVerticesChar.clear();
+    }
+
+    public void clearEndVertices(){
+        this.endVertices.clear();
+    }
+
+    public void clearEndVerticesChar(){
+        this.endVerticesChar.clear();
+    }
+
+    public int getRadius(){
+        return this.radius;
+    }
+
+    public int getDiameter(){
+        return this.diameter;
+    }
+
+    public String getCenter(){
+        return this.center;
+    }
 }

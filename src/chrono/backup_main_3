@@ -1,0 +1,427 @@
+import javafx.application.Application;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import lib.GT;
+import lib.Matrix;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Main extends Application {
+
+    private Scene scene;
+    private final int DEFAULT_SIZE = 10;
+    private Matrix adjMatrix;
+    private Matrix disMatrix;
+    private Matrix pathMatrix;
+    private Button[][] adjMatrixBtn;
+    private Button[][] disMatrixBtn;
+    private Button[][] pathMatrixBtn;
+
+    public void initMain(int size, Stage window){
+
+        Text topText = new Text("");
+        Text rightText = new Text("");
+        Text bottomText = new Text("");
+        Text leftText = new Text("");
+        BorderPane.setAlignment(topText, Pos.TOP_CENTER);
+        BorderPane.setAlignment(bottomText,Pos.BOTTOM_CENTER);
+        BorderPane.setAlignment(leftText,Pos.CENTER_LEFT);
+        BorderPane.setAlignment(rightText,Pos.CENTER_RIGHT);
+
+        int labelMatrixSize = size+2;
+        int phM = size+1;
+        int maxSize = 17*36;
+        double tileSize = maxSize/(size+2);
+        int fontSize = (int)tileSize/2-5;
+        adjMatrix = new Matrix(phM-1);
+        FlowPane adjMatrixFrame = new FlowPane();
+
+        adjMatrixFrame.setMaxHeight(maxSize);
+        adjMatrixFrame.setMaxWidth(maxSize);
+
+        adjMatrixFrame.setStyle("-fx-background-color:rgba(0,0,0,0);");
+        adjMatrixBtn = new Button[labelMatrixSize][labelMatrixSize];
+
+        for (int i = 0; i < adjMatrixBtn.length; i++) {
+            for (int j = 0; j < adjMatrixBtn.length; j++) {
+
+                if((i == 0) || (j == 0) || (i == phM) || (j == phM)){
+                    String thisLabelChar = "";
+                    if(!((i == 0) && (j == 0)) && !((i == 0 ) && (j == phM)) && !((i == phM) && (j == 0)) && !((i == phM ) && (j == phM))){
+                        int c = (i == 0) || (i == phM) ? 64+j : 64+i;
+                        thisLabelChar += Character.toString ((char) c);
+                    }
+                    adjMatrixBtn[i][j] = new Button(thisLabelChar);
+                    adjMatrixBtn[i][j].setId(i+"-"+j);
+                    adjMatrixBtn[i][j].setStyle("-fx-font-size: "+fontSize+"px;-fx-text-fill:#8d8d8e;");
+                    adjMatrixFrame.getChildren().add(adjMatrixBtn[i][j]);
+                    adjMatrixBtn[i][j].getStyleClass().add("matrixLabels");
+                    adjMatrixBtn[i][j].setPrefHeight(tileSize);
+                    adjMatrixBtn[i][j].setPrefWidth(tileSize);
+                } else {
+                    adjMatrixBtn[i][j] = new Button("0");
+
+                    if(i == j){
+                        adjMatrixBtn[i][j].getStyleClass().add("loopVertex");
+                        adjMatrixBtn[i][j].setStyle("-fx-text-fill: #6f6f6f;-fx-background-color: #9cb0ce;-fx-font-size: "+fontSize+"px;");
+                        adjMatrixBtn[i][j].setOnMouseEntered(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#f27d7d", "#fff", phM, true);
+                        });
+                        adjMatrixBtn[i][j].setOnMouseExited(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#9cb0ce", "#8d8d8e", phM, true);
+                        });
+                    } else {
+                        adjMatrixBtn[i][j].getStyleClass().add("regVertex");
+                        adjMatrixBtn[i][j].setStyle("-fx-text-fill: #6f6f6f;-fx-background-color: #fff;-fx-font-size: "+fontSize+"px;");
+                        int thisI = i-1;
+                        int thisJ = j-1;
+                        adjMatrixBtn[i][j].setOnMouseClicked(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            //System.out.println(thisBtn.getId());
+                            toggleBtn(thisBtn.getId());
+                            int toggleBtnVal = Integer.parseInt(thisBtn.getText());
+                            adjMatrix.setMirrorVal(thisI,thisJ,toggleBtnVal);
+                            //GT.printMatrix(adjMatrix);
+                            calculateGraph(adjMatrix);
+                            updatePathMatrix();
+                        });
+                        adjMatrixBtn[i][j].setOnMouseEntered(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#cff2c9", "#fff", phM, false);
+                        });
+                        adjMatrixBtn[i][j].setOnMouseExited(t -> {
+                            Button thisBtn = (Button) t.getSource();
+                            hoverBtn(thisBtn.getId(), "#fff", "#8d8d8e", phM, false);
+                        });
+                    }
+                    adjMatrixBtn[i][j].setId(i+"-"+j);
+                    adjMatrixBtn[i][j].setPrefHeight(tileSize);
+                    adjMatrixBtn[i][j].setPrefWidth(tileSize);
+                    //adjMatrix.setMatrix(i,j,0);
+                    adjMatrixFrame.getChildren().add(adjMatrixBtn[i][j]);
+                }
+            }
+        }
+
+        //System.out.print(adjMatrix.getMatrix()[1][2]);
+/*
+        int testV = 3;
+        Matrix testM = new Matrix(testV);
+
+        for (int i = 0; i < testV; i++) {
+            for (int j = 0; j < testV; j++) {
+                testM.setVal(i,j,i+1);
+            }
+        }
+        //Matrix printTest = mTest.powMatrix(testM.getMatrix(), 5);
+        Matrix printTest = GT.powMatrix(testM, 3);
+
+        for (int i = 0; i < testV; i++) {
+            for (int j = 0; j < testV; j++) {
+                System.out.print(printTest.getMatrix()[i][j]);
+            }
+            System.out.print("\n");
+        }*/
+
+        VBox topFrame = new VBox();
+        topFrame.setSpacing(10);
+        ChoiceBox choiceBoxSize = new ChoiceBox();
+        Text choiceBoxSizeTitle = new Text("Graph IT");
+        try {
+            final Font f = Font.loadFont(new FileInputStream(new File("src/fonts/ag.ttf")), 12);
+            choiceBoxSizeTitle.setFont(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        choiceBoxSizeTitle.setId("choiceBoxTitle");
+        topFrame.setMargin(choiceBoxSizeTitle, new Insets(15, 5, 10, 5));
+        topFrame.setMargin(choiceBoxSize, new Insets(15, 5, 5, 5));
+        topFrame.setAlignment(Pos.BASELINE_CENTER);
+        ObservableList list = topFrame.getChildren();
+        list.addAll(choiceBoxSizeTitle, choiceBoxSize);
+        choiceBoxSize.setId("choiceBoxSize");
+        choiceBoxSize.getItems().addAll("3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+        choiceBoxSize.getSelectionModel().select(size-3);
+        choiceBoxSize.getSelectionModel().selectedIndexProperty().addListener((observableValue, number, number2) -> {
+            // System.out.println(choiceBoxSize.getItems().get((Integer) number2));
+            int chosenSize = (Integer) number2;
+            initMain(chosenSize+3,window);
+        });
+
+
+        int subMaxSize = 15*20;
+        double subTileSize = subMaxSize/(size);
+        int subFontSize = size > 9 ? 14 : (int)subTileSize/2-5;
+        //int subFontSize = (int)subTileSize/2-5;
+
+        VBox leftFrame = new VBox();
+        Text leftFrameTitle = new Text("Wegmatrix");
+        leftFrameTitle.getStyleClass().add("subTitle");
+        pathMatrix = new Matrix(size, 20);
+        FlowPane pathMatrixFrame = new FlowPane();
+        leftFrame.setMargin(leftFrameTitle, new Insets(5, 0, 10, 20));
+        leftFrame.setMargin(pathMatrixFrame, new Insets(0, 5, 10, 20));
+        pathMatrixFrame.setMaxHeight(subMaxSize);
+        pathMatrixFrame.setMaxWidth(subMaxSize);
+        pathMatrixFrame.setStyle("-fx-background-color:rgba(0,0,0,0);");
+        pathMatrixBtn = new Button[size][size];
+
+        for (int i = 0; i < pathMatrixBtn.length; i++) {
+            for (int j = 0; j < pathMatrixBtn.length; j++) {
+                //pathMatrixBtn[i][j] = new Button("∞");
+                pathMatrixBtn[i][j] = new Button("0");
+                pathMatrixBtn[i][j].setId(i+"-"+j+"-p");
+                pathMatrix.setMirrorVal(i,j,0);
+                pathMatrixBtn[i][j].setStyle("-fx-text-fill: #6f6f6f;-fx-font-size: "+subFontSize+"px;");
+                pathMatrixBtn[i][j].setPadding(Insets.EMPTY);
+                pathMatrixBtn[i][j].setPrefHeight(subTileSize);
+                pathMatrixBtn[i][j].setPrefWidth(subTileSize);
+                if(i == j){
+                    pathMatrixBtn[i][j].setText("1");
+                    pathMatrix.setMirrorVal(i,j,1);
+                    pathMatrixBtn[i][j].setStyle("-fx-text-fill: #000;-fx-font-size: "+subFontSize+"px;");
+                    pathMatrixBtn[i][j].getStyleClass().add("loopVertex");
+                } else {
+                    pathMatrixBtn[i][j].getStyleClass().add("regVertex");
+                }
+                pathMatrixFrame.getChildren().add(pathMatrixBtn[i][j]);
+            }
+        }
+        ObservableList leftList = leftFrame.getChildren();
+
+        Text components = new Text("Komponenten: 0");
+        components.getStyleClass().add("assets");
+        components.setId("components");
+        Text bridges = new Text("Brücken: {}");
+        bridges.getStyleClass().add("assets");
+        bridges.setId("bridges");
+        Text articulations = new Text("Artikulationen: {}");
+        articulations.getStyleClass().add("assets");
+        articulations.setId("articulations");
+        Text connected = new Text("Zusammenhängend: nein");
+        connected.getStyleClass().add("assets");
+        connected.setId("connected");
+
+        leftFrame.setMargin(components, new Insets(15, 0, 10, 25));
+        leftFrame.setMargin(bridges, new Insets(15, 0, 10, 25));
+        leftFrame.setMargin(articulations, new Insets(15, 0, 10, 25));
+        leftFrame.setMargin(connected, new Insets(15, 0, 10, 25));
+        leftList.addAll(leftFrameTitle,
+                pathMatrixFrame,
+                components,
+                bridges,
+                articulations,
+                connected
+        );
+
+        VBox rightFrame = new VBox();
+        Text rightFrameTitle = new Text("Distanzmatrix");
+        rightFrameTitle.getStyleClass().add("subTitle");
+        disMatrix = new Matrix(size, 20);
+        FlowPane disMatrixFrame = new FlowPane();
+        rightFrame.setMargin(rightFrameTitle, new Insets(5, 0, 10, 0));
+        rightFrame.setMargin(disMatrixFrame, new Insets(0, 20, 10, 0));
+        disMatrixFrame.setMaxHeight(subMaxSize);
+        disMatrixFrame.setMaxWidth(subMaxSize);
+        disMatrixFrame.setStyle("-fx-background-color:rgba(0,0,0,0);");
+        disMatrixBtn = new Button[size][size];
+
+        for (int i = 0; i < disMatrixBtn.length; i++) {
+            for (int j = 0; j < disMatrixBtn.length; j++) {
+                disMatrixBtn[i][j] = new Button("∞");
+                disMatrixBtn[i][j].setStyle("-fx-text-fill: #6f6f6f;-fx-font-size: "+subFontSize+"px;");
+                disMatrixBtn[i][j].setPadding(Insets.EMPTY);
+                disMatrixBtn[i][j].setPrefHeight(subTileSize);
+                disMatrixBtn[i][j].setPrefWidth(subTileSize);
+                if(i == j){
+                    disMatrixBtn[i][j].setText("0");
+                    disMatrixBtn[i][j].setStyle("-fx-text-fill: #000;-fx-font-size: "+subFontSize+"px;");
+                    disMatrixBtn[i][j].getStyleClass().add("loopVertex");
+                } else {
+                    disMatrixBtn[i][j].getStyleClass().add("regVertex");
+                }
+                disMatrix.setVal(i,j,1);
+                disMatrixFrame.getChildren().add(disMatrixBtn[i][j]);
+            }
+        }
+
+        ObservableList rightList = rightFrame.getChildren();
+        //leftFrame.setAlignment(Pos.CENTER_LEFT);
+        //leftFrame.setAlignment(Pos.BASELINE_CENTER);
+        Text radius = new Text("Radius: 0");
+        radius.getStyleClass().add("assets");
+        radius.setId("radius");
+        Text diam = new Text("Durchmesser: 0");
+        diam.getStyleClass().add("assets");
+        diam.setId("diam");
+        Text center = new Text("Zentrum: {}");
+        center.getStyleClass().add("assets");
+        center.setId("center");
+
+        rightFrame.setMargin(radius, new Insets(15, 0, 10, 5));
+        rightFrame.setMargin(diam, new Insets(15, 0, 10, 5));
+        rightFrame.setMargin(center, new Insets(15, 0, 10, 5));
+
+        rightList.addAll(rightFrameTitle,
+                disMatrixFrame,
+                radius,
+                diam,
+                center
+        );
+        /*
+         *  SET ROOT
+         */
+
+        BorderPane root = new BorderPane(adjMatrixFrame, topFrame, rightFrame, bottomText, leftFrame);
+        // root.setPrefSize(1280, 720);
+        window.setMaximized(true);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        root.setPrefSize(screenBounds.getWidth(), screenBounds.getHeight());
+        root.getStyleClass().add("root");
+        // window.setFullScreen(true);
+        scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("css/generic.css").toExternalForm());
+        window.setScene(scene);
+    }
+
+    @Override
+    public void start(Stage window) throws Exception {
+        initMain(DEFAULT_SIZE,window);
+        window.setTitle("GraphIT");
+        window.show();
+        window.setMinWidth(window.getWidth());
+        window.setMinHeight(window.getHeight());
+    }
+
+    public static void main(String[] args) { launch(args); }
+
+    public void hoverBtn(String id, String color, String colorLabel, int size, boolean disabledBtn){
+        String[] data = id.split("-");
+        int valA = Integer.parseInt(data[0]);
+        int valB = Integer.parseInt(data[1]);
+
+        Button labelBtn = (Button) scene.lookup("#"+valB+"-0");
+        String thisStyle = colorLabel.equals("#8d8d8e") ? labelBtn.getStyle().replace("#fff", "#8d8d8e"): labelBtn.getStyle().replace("#8d8d8e", "#fff");
+        //labelBtn.setStyle(thisStyle);
+        adjMatrixBtn[valB][0].setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#0-"+valB);
+        //labelBtn.setStyle(thisStyle);
+        adjMatrixBtn[0][valB].setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#0-"+valA);
+        //labelBtn.setStyle(thisStyle);
+        adjMatrixBtn[0][valA].setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#"+valA+"-0");
+        //labelBtn.setStyle(thisStyle);
+        adjMatrixBtn[valA][0].setStyle(thisStyle);
+
+        labelBtn = (Button) scene.lookup("#"+valB+"-"+size);
+        labelBtn.setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#"+size+"-"+valB);
+        labelBtn.setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#"+size+"-"+valA);
+        labelBtn.setStyle(thisStyle);
+        labelBtn = (Button) scene.lookup("#"+valA+"-"+size);
+        labelBtn.setStyle(thisStyle);
+
+        if(!disabledBtn){
+            Button hoverBtnA = (Button) scene.lookup("#"+id);
+            Button hoverBtnB = (Button) scene.lookup("#"+valB+"-"+valA);
+            thisStyle = color.equals("#fff") ? hoverBtnA.getStyle().replace("#cff2c9", "#fff"):hoverBtnA.getStyle().replace("#fff", "#cff2c9");
+            hoverBtnA.setStyle(thisStyle);
+            hoverBtnB.setStyle(thisStyle);
+        } else {
+            Button hoverBtnA = (Button) scene.lookup("#"+id);
+            thisStyle = color.equals("#9cb0ce") ? hoverBtnA.getStyle().replace("#f27d7d", "#9cb0ce"):hoverBtnA.getStyle().replace("#9cb0ce", "#f27d7d");
+            hoverBtnA.setStyle(thisStyle);
+        }
+    }
+
+    public void toggleBtn(String id){
+        String[] data = id.split("-");
+        int valA = Integer.parseInt(data[0]);
+        int valB = Integer.parseInt(data[1]);
+        Button toggleBtn = (Button) scene.lookup("#"+id);
+        int toggleBtnVal = Integer.parseInt(toggleBtn.getText());
+        toggleBtnVal ^= 1;
+        String activeBtnColor;
+        if(toggleBtnVal == 1){
+            activeBtnColor = toggleBtn.getStyle().replace("#6f6f6f", "#000"); // font color
+            activeBtnColor = activeBtnColor.replace("#cff2c9", "#d8d8d8"); // bg color
+        } else {
+            activeBtnColor = toggleBtn.getStyle().replace("#000", "#6f6f6f");
+            activeBtnColor = activeBtnColor.replace("#d8d8d8", "#cff2c9");
+        }
+        toggleBtn.setStyle(activeBtnColor);
+        toggleBtn.setText(""+toggleBtnVal+"");
+        toggleBtn = (Button) scene.lookup("#"+valB+"-"+valA);
+        toggleBtn.setStyle(activeBtnColor);
+        toggleBtn.setText(""+toggleBtnVal+"");
+        // TODO change value in Matrix
+    }
+
+    public void updatePathMatrix(){
+        int vertices = this.adjMatrix.getVertices();
+        int[][] adjMatrix = this.adjMatrix.getMatrix();
+
+        for (int i = 0; i < vertices; i++) {
+            for (int j = 0; j < vertices; j++) {
+                if(adjMatrix[i][j] == 1){
+                    this.pathMatrix.setMirrorVal(i,j,1);
+                    //Button thisPathBtn = (Button) scene.lookup(i+"-"+j+"-p");
+                    pathMatrixBtn[i][j].setText("1");
+                    //System.out.println("\n\n"+i+"-"+j+"-p\n\n"+thisPathBtn);
+                }
+                System.out.print(this.pathMatrix.getMatrix()[i][j]);
+            }
+            System.out.print("\n");
+        }
+
+/*
+        Queue<Integer> notVisited = new LinkedList<>();
+
+        notVisited.add(0);
+        while (!notVisited.isEmpty()){
+            Integer current = notVisited.remove();
+
+            // check the whole line of current for connected edges
+            for (int i = 0; i < vertices; i++) {
+                if(thisMatrix[current][i] == 1){
+                    if(current != i){
+                        notVisited.add(i);
+                    }
+                }
+            }
+        }
+        System.out.println(notVisited);*/
+
+    }
+
+
+    public void calculateGraph(Matrix adjMatrix){
+        int componentsTotal = GT.getComponents(adjMatrix);
+/*        Text components = (Text) scene.lookup("#components");
+        int componentsTotal = GT.getComponents(adjMatrix);
+        components.setText("Komponenten: "+componentsTotal);
+        Text connected = (Text) scene.lookup("#connected");
+        String graphConnected = componentsTotal > 1? "nein":"ja";
+        connected.setText("Zusammenhängend: "+graphConnected);*/
+        //System.out.println(GT.getComponents(adjMatrix));
+    }
+}
